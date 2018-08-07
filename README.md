@@ -23,6 +23,7 @@ Install the requirements:
 
 * ascii_graph
 * numpy
+* colorama
 
 `pip install -r requirements.txt`
 

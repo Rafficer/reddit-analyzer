@@ -1,2 +1,3 @@
 ascii_graph
 numpy
+colorama

@@ -11,8 +11,12 @@ from ascii_graph.colordata import hcolor
 import re
 import numpy
 import sys
+import colorama
 
 __version__ = '1.0.1'
+
+#For correct color output on windows
+colorama.init()
 
 #Parse arguments
 parser = argparse.ArgumentParser(description=
