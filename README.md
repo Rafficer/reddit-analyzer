@@ -47,7 +47,6 @@ optional arguments:
 
 ### Example
 
-![x](https://i.imgur.com/cTGUv2X.png)
-![x](https://i.imgur.com/7Fq0TwO.png)
+![x](https://i.imgur.com/heR9B4w.gif)
 
 *Idea and 2 functions from https://github.com/x0rz/tweets_analyzer*
