@@ -27,19 +27,24 @@ Install the requirements:
 
 `pip install -r requirements.txt`
 
+If you want to use IBM Watson Personality Insights (-w option) also do:
+
+`pip install -r watson_requirements.txt`
+
 ### Usage
 
 ``` Python
 usage: analyzer.py -u <username> [options]
 
 Reddit Account Analyzer (https://github.com/rafficer/reddit-analyzer) Version
-1.0.1
+1.1.0
 
 optional arguments:
   -h, --help            show this help message and exit
   -u USER, --user USER  Reddit account username
-  -t TOP, --top TOP     Specifies how many entries per top list. "0" doesn't
-                        outputs all entries of a toplist. Default: 5
+  -t TOP, --top TOP     Specifies how many entries per top list. "0" outputs
+                        all entries of a toplist. Default: 5
+  -w, --watson          Queries IBM Watson Personality Insights
   -r SUBREDDIT, --subreddit SUBREDDIT
                         Prints links to all submissions/comments of user to
                         that specific subreddit

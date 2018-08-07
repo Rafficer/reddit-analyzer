@@ -13,7 +13,7 @@ import numpy
 import sys
 import colorama
 
-__version__ = '1.0.1'
+__version__ = '1.1.0'
 
 #For correct color output on windows
 colorama.init()
@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser(description=
 usage='%(prog)s -u <username> [options]')
 parser.add_argument("-u", "--user", required=True, help="Reddit account username")
 parser.add_argument("-t", "--top",type=int, help="Specifies how many entries per top list. \"0\" outputs all entries of a toplist. Default: 5")
+parser.add_argument("-w", "--watson", action='store_true', help="Queries IBM Watson Personality Insights")
 parser.add_argument("-r", "--subreddit", help="Prints links to all submissions/comments of user to that specific subreddit")
 
 args = parser.parse_args()
@@ -112,7 +113,7 @@ def print_stats(statlist, statname):
     print '\033[0m'
     for x in range(top):
         
-        print "-", ("{:<%d}" % maxlen_name).format(statlist[0][x]), # Name
+        print "- ", ("{:<%d}" % maxlen_name).format(statlist[0][x]), # Name
         print ":",
         print ("{:>%d}" % maxlen_value).format(statlist[1][x]), # Value
         print "|",
@@ -295,6 +296,58 @@ def print_subreddit_links(commentlist, submissionlist):
     else:
         print "No submissions in /r/" + args.subreddit
 
+def watson(commentlist, submissionlist):
+    print
+    from watson_developer_cloud import PersonalityInsightsV2 as PersonalityInsights
+    from IBM_Watson import PIusername, PIpassword
+
+    if PIusername == '' or PIpassword == '':
+        print "Watson Analysis was requested, but the password and username seem to be empty"
+        return
+
+    print '\033[92m' + "[+] IBM Watson Personality Insights Results" + '\033[0m'
+
+    def flatten(orig):
+        data = {}
+        for c in orig['tree']['children']:
+            if 'children' in c:
+                for c2 in c['children']:
+                    if 'children' in c2:
+                        for c3 in c2['children']:
+                            if 'children' in c3:
+                                for c4 in c3['children']:
+                                    if (c4['category'] == 'personality'):
+                                        data[c4['id']] = c4['percentage']
+                                        if 'children' not in c3:
+                                            if (c3['category'] == 'personality'):
+                                                    data[c3['id']] = c3['percentage']
+        return data
+
+    text = ""
+
+    for comment in commentlist:
+        text += comment['data']['body']
+    
+
+    personality_insights = PersonalityInsights(username=PIusername, password=PIpassword)
+    pi_result = personality_insights.profile(text)
+
+    flattened_result = flatten(pi_result)
+
+    helperlist = []
+    for key in flattened_result.keys():
+        helperlist.append(len(key))
+    
+    maxlen_key = max(helperlist)
+
+    for key in flattened_result.keys():
+        print "- ", ("{:<%d}" % maxlen_key).format(key), ":",
+        value = "%.1f%%" % (flattened_result[key] * 100)
+        print ("{:>4}").format(value)
+    
+
+    
+
         
 # Get and print general account information
 accountstats = apirequest("https://api.reddit.com/user/%s/about" % args.user)
@@ -331,6 +384,8 @@ def usermain():
         print
 
     print_average_upvotes(comments, submissions)
+    if args.watson:
+        watson(comments, submissions)
 
 if args.subreddit == None:
     usermain()
