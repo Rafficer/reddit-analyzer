@@ -2,7 +2,7 @@
 
 import json
 import argparse
-import urllib2
+import requests
 import datetime
 from operator import itemgetter
 from ascii_graph import Pyasciigraph
@@ -38,10 +38,9 @@ def apirequest(url):
     "Connection": "keep-alive" 
     }
 
-    req = urllib2.Request(url, headers=request_headers)
-    res = urllib2.urlopen(req)
+    res = requests.get(url, headers=request_headers)
 
-    return json.loads(res.read())
+    return res.json()
 
 
 # Returns a list of dictionaries with either all comments or all submissions
@@ -61,8 +60,8 @@ def populate_dics(username, option):
     total = 0
     name = ""
 
-    print
-    print '\033[93m' + "Fetching %s..." % switch2[option] + '\033[0m'
+    print()
+    print('\033[93m' + "Fetching %s..." % switch2[option] + '\033[0m')
 
     while True:
         data = apirequest(url + name)
@@ -73,8 +72,7 @@ def populate_dics(username, option):
         for entry in data['data']['children']:
             lst.append(entry)
         name = data['data']['children'][num - 1]['data']['name']
-        print '\033[93m' + "Fetched %d %s" % (total, switch2[option]) + '\033[0m' + '\r',
-        sys.stdout.flush()
+        print('\033[93m' + "Fetched %d %s" % (total, switch2[option]) + '\033[0m', end="\r")
     return lst
         
 
@@ -106,18 +104,18 @@ def print_stats(statlist, statname):
     for x in statlist[1]:
         helperlist.append(len(str(x)))
     maxlen_value = max(helperlist) + 2
-    print '\033[92m' + "[+]", statname
-    print "[+] Datapoints:", sum(statlist[1]),
-    print "| Total Entries:", len(statlist[1]),
-    print "| Showing:", top,
-    print '\033[0m'
+    print('\033[92m' + "[+]", statname)
+    print("[+] Datapoints:", sum(statlist[1]), end="")
+    print("| Total Entries:", len(statlist[1]), end="")
+    print("| Showing:", top, end="")
+    print('\033[0m')
     for x in range(top):
         
-        print "- ", ("{:<%d}" % maxlen_name).format(statlist[0][x]), # Name
-        print ":",
-        print ("{:>%d}" % maxlen_value).format(statlist[1][x]), # Value
-        print "|",
-        print "(%.1f%%)" % (float(statlist[1][x]) / sum(statlist[1]) * 100) #Percentage
+        print("- ", ("{:<%d}" % maxlen_name).format(statlist[0][x]), end="") # Name
+        print(":", end="")
+        print(("{:>%d}" % maxlen_value).format(statlist[1][x]), end="") # Value
+        print("|", end="")
+        print("(%.1f%%)" % (float(statlist[1][x]) / sum(statlist[1]) * 100)) #Percentage
 
 def filter_data(lst, keyname):
     dic = {}
@@ -187,7 +185,7 @@ def print_charts(dataset, title, weekday=False):
 
     for line in graph.graph(title, data):
         print(line)
-    print ""
+    print("")
 
 def int_to_weekday(day):
     weekdays = "Monday Tuesday Wednesday Thursday Friday Saturday Sunday".split()
@@ -245,9 +243,9 @@ def print_activity_charts(commentlist, submissionlist):
             hourdic[hour] += 1
     
     print_charts(hourdic, "Daily activity by hour")
-    print
+    print()
     print_charts(weekdaydic, "Weekly activity by day", True)
-    print
+    print()
 
 def print_average_upvotes(commentlist, submissionlist):
     commentscores = []
@@ -255,20 +253,20 @@ def print_average_upvotes(commentlist, submissionlist):
     if len(commentlist) > 0:
         for comment in commentlist:
             commentscores.append(comment['data']['score'])
-        print "Average Score on comments:", "%.1f" % average(commentscores)
+        print("Average Score on comments:", "%.1f" % average(commentscores))
 
     if len(submissionlist) > 0:
         for sub in submissionlist:
             subscores.append(sub['data']['score'])
-        print "Average Score on submissions:", "%.1f" % average(subscores)
+        print("Average Score on submissions:", "%.1f" % average(subscores))
 
 
 def average(lst):
     return float(sum(lst)) / len(lst)
 
 def print_subreddit_links(commentlist, submissionlist):
-    print
-    print
+    print()
+    print()
     commentlinks = []
     sublinks = []
 
@@ -283,29 +281,29 @@ def print_subreddit_links(commentlist, submissionlist):
                 sublinks.append(sub['data']['permalink'])
 
     if len(commentlinks) > 0:
-        print "Links to comments in /r/" + args.subreddit
+        print("Links to comments in /r/" + args.subreddit)
         for x in commentlinks:
-            print "https://www.reddit.com" + x
+            print("https://www.reddit.com" + x)
     else:
-        print "No comments in /r/" + args.subreddit
+        print("No comments in /r/" + args.subreddit)
 
     if len(sublinks) > 0:
-        print "Links to submissions in /r/" + args.subreddit
+        print("Links to submissions in /r/" + args.subreddit)
         for x in sublinks:
-            print "https://www.reddit.com" + x
+            print("https://www.reddit.com" + x)
     else:
-        print "No submissions in /r/" + args.subreddit
+        print("No submissions in /r/" + args.subreddit)
 
 def watson(commentlist, submissionlist):
-    print
+    print()
     from watson_developer_cloud import PersonalityInsightsV2 as PersonalityInsights
     from IBM_Watson import PIusername, PIpassword
 
     if PIusername == '' or PIpassword == '':
-        print "Watson Analysis was requested, but the password and username seem to be empty"
+        print("Watson Analysis was requested, but the password and username seem to be empty")
         return
 
-    print '\033[92m' + "[+] IBM Watson Personality Insights Results" + '\033[0m'
+    print('\033[92m' + "[+] IBM Watson Personality Insights Results" + '\033[0m')
 
     def flatten(orig):
         data = {}
@@ -341,9 +339,9 @@ def watson(commentlist, submissionlist):
     maxlen_key = max(helperlist)
 
     for key in flattened_result.keys():
-        print "- ", ("{:<%d}" % maxlen_key).format(key), ":",
+        print("- ", ("{:<%d}" % maxlen_key).format(key), ":", end="")
         value = "%.1f%%" % (flattened_result[key] * 100)
-        print ("{:>4}").format(value)
+        print(("{:>4}").format(value))
     
 
     
@@ -351,37 +349,37 @@ def watson(commentlist, submissionlist):
         
 # Get and print general account information
 accountstats = apirequest("https://api.reddit.com/user/%s/about" % args.user)
-print '\033[92m' + "--General Information about the Account--", '\033[0m'
-print "Accountname:", accountstats['data']['name']
-print
+print('\033[92m' + "--General Information about the Account--", '\033[0m')
+print("Accountname:", accountstats['data']['name'])
+print()
 total_karma = int(accountstats['data']['comment_karma']) + int(accountstats['data']['link_karma'])
-print "Total Karma:", total_karma
-print "Comment Karma:", accountstats['data']['comment_karma'], "|", "(%.1f%%)" % (float(accountstats['data']['comment_karma']) / total_karma * 100)
-print "Post Karma:", accountstats['data']['link_karma'], "|", "(%.1f%%)" % (float(accountstats['data']['link_karma']) / total_karma * 100)
-print
-print "Account created:", datetime.datetime.utcfromtimestamp(accountstats['data']['created_utc']), "UTC"
-print "Account Age:", difference_from_unixtime(accountstats['data']['created_utc'])
+print("Total Karma:", total_karma)
+print("Comment Karma:", accountstats['data']['comment_karma'], "|", "(%.1f%%)" % (float(accountstats['data']['comment_karma']) / total_karma * 100))
+print("Post Karma:", accountstats['data']['link_karma'], "|", "(%.1f%%)" % (float(accountstats['data']['link_karma']) / total_karma * 100))
+print()
+print("Account created:", datetime.datetime.utcfromtimestamp(accountstats['data']['created_utc']), "UTC")
+print("Account Age:", difference_from_unixtime(accountstats['data']['created_utc']))
 
 # Get comments/submissions and print information from them
 comments = populate_dics(args.user, "c")
 submissions = populate_dics(args.user, "s")
 
 def usermain():
-    print
-    print
+    print()
+    print()
     print_activity_charts(comments, submissions)
     if len(comments) > 0:
         print_stats(sort_data(filter_data(comments, "subreddit")), "Top active subreddits based on comments")
-        print
+        print()
     if len(submissions) > 0:
         print_stats(sort_data(filter_data(submissions, "subreddit")), "Top active subreddits based on posts")
-        print
+        print()
     if len(submissions) > 0:
         print_stats(sort_data(filter_data(submissions, "domain")), "Top domains posted")
-        print
+        print()
     if len(comments) > 0:
         print_stats(sort_data(filter_data(comments, "link_author")), "Top people replied to")
-        print
+        print()
 
     print_average_upvotes(comments, submissions)
     if args.watson:

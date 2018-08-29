@@ -15,7 +15,7 @@ Please feel free to contribute, raise issues or request features!
 
 ### Installation
 
-Written in Python 2.7.
+Written in Python 3.6.
 
 `git clone https://github.com/rafficer/reddit-analyzer` or download as zip.
 
@@ -24,12 +24,13 @@ Install the requirements:
 * ascii_graph
 * numpy
 * colorama
+* requests
 
-`pip install -r requirements.txt`
+`pip install -r requirements.txt` or `pip3 install -r requirements.txt`
 
 If you want to use IBM Watson Personality Insights (-w option) also do:
 
-`pip install -r watson_requirements.txt`
+`pip install -r watson_requirements.txt` or `pip3 install -r watson_requirements.txt`
 
 ### Usage
 

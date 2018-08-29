@@ -1,3 +1,4 @@
 ascii_graph
 numpy
 colorama
+requests
