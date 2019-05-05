@@ -13,6 +13,8 @@ import numpy
 import sys
 import colorama
 import shelve
+import time
+import dbm
 
 __version__ = '1.1.0'
 
@@ -344,10 +346,7 @@ def watson(commentlist, submissionlist):
         value = "%.1f%%" % (flattened_result[key] * 100)
         print(("{:>4}").format(value))
     
-
-    
-
-        
+      
 # Get and print general account information
 accountstats = apirequest(f"https://api.reddit.com/user/{args.user}/about")
 print('\033[92m' + "--General Information about the Account--", '\033[0m')
@@ -362,8 +361,28 @@ print("Account created:", datetime.datetime.utcfromtimestamp(accountstats['data'
 print("Account Age:", difference_from_unixtime(accountstats['data']['created_utc']))
 
 # Get comments/submissions and print information from them
-comments = populate_dics(args.user, "c")
-submissions = populate_dics(args.user, "s")
+# Use shelffile for it to not fetch again and again
+
+def new_shelffile():
+    shelffile = shelve.open(f"{args.user}.shelf",)
+    comments = populate_dics(args.user, "c")
+    submissions = populate_dics(args.user, "s")
+    shelffile['comments'] = comments
+    shelffile['submissions'] = submissions
+    shelffile['time'] = time.time()
+    shelffile.close()
+    return comments, submissions
+try: #Use existing Shelffile
+    shelffile = shelve.open(f"{args.user}.shelf", "w")
+    if time.time() - shelffile['time'] >= 900: # If the shelffile is older than 15 minutes, create a new one
+        comments, submissions = new_shelffile()
+    else:
+        comments = shelffile['comments']
+        submissions = shelffile['submissions']
+        shelffile.close()
+except dbm.error: #Create new Shelffile
+    comments, submissions = new_shelffile()
+    
 
 def usermain():
     print()
