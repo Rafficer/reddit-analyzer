@@ -12,6 +12,7 @@ import re
 import numpy
 import sys
 import colorama
+import shelve
 
 __version__ = '1.1.0'
 
@@ -55,13 +56,13 @@ def populate_dics(username, option):
         "s" : "posts"
     }
 
-    url = "https://api.reddit.com/user/%s/%s?limit=100&after=" % (username, switch[option])
+    url = f"https://api.reddit.com/user/{username}/{switch[option]}?limit=100&after="
     lst = []
     total = 0
     name = ""
 
     print()
-    print('\033[93m' + "Fetching %s..." % switch2[option] + '\033[0m')
+    print('\033[93m' + f"Fetching {switch2[option]}..." + '\033[0m')
 
     while True:
         data = apirequest(url + name)
@@ -135,13 +136,13 @@ def difference_from_unixtime(timestamp):
     days = d.days
     seconds = d.seconds
 
-    years = days / 365
-    days -= years * 365
+    years = int(days / 365)
+    days -= int(years * 365)
 
-    hours = seconds / 3600
-    seconds -= 3600 * hours
-    minutes = seconds / 60
-    seconds -= 60 * minutes
+    hours = int(seconds / 3600)
+    seconds -= int(3600 * hours)
+    minutes = int(seconds / 60)
+    seconds -= int(60 * minutes)
     if years <= 0:
         if days <= 0:
             if hours <= 0:
@@ -348,7 +349,7 @@ def watson(commentlist, submissionlist):
 
         
 # Get and print general account information
-accountstats = apirequest("https://api.reddit.com/user/%s/about" % args.user)
+accountstats = apirequest(f"https://api.reddit.com/user/{args.user}/about")
 print('\033[92m' + "--General Information about the Account--", '\033[0m')
 print("Accountname:", accountstats['data']['name'])
 print()
